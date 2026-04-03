@@ -79,6 +79,7 @@ jobs:
         run: |
           test -d frontend
           test -d backend
+          test -d backend/knowledge
           test -d data
           test -d docs
           test -d scripts

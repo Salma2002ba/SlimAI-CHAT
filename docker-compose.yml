@@ -26,6 +26,12 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-slimai_user}:${POSTGRES_PASSWORD:-slimai_password}@postgres:5432/${POSTGRES_DB:-slimai}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173,http://127.0.0.1:5173}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      CHAT_PROVIDER: ${CHAT_PROVIDER:-auto}
+      GEMINI_FALLBACK_MOCK_ON_429: ${GEMINI_FALLBACK_MOCK_ON_429:-false}
+      RAG_ENABLED: ${RAG_ENABLED:-true}
+      RAG_TOP_K: ${RAG_TOP_K:-4}
+      RAG_CHUNK_SIZE: ${RAG_CHUNK_SIZE:-700}
+      RAG_CHUNK_OVERLAP: ${RAG_CHUNK_OVERLAP:-120}
     depends_on:
       postgres:
         condition: service_healthy

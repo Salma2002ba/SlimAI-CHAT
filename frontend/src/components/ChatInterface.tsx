@@ -265,6 +265,9 @@ export default function ChatInterface({ messages, onSendMessage, isTyping, langu
               ? 'SlimAI peut faire des erreurs. Vérifiez les informations importantes.'
               : 'SlimAI can make mistakes. Check important info.'}
           </p>
+          <p className="text-center text-[9px] text-slate-400/70 mt-2 font-mono tracking-tight">
+            React · Vite · FastAPI · PostgreSQL · RAG (BM25) · Gemini
+          </p>
         </div>
       </footer>
     </div>

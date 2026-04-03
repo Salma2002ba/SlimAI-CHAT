@@ -5,7 +5,9 @@ Minimal API with PostgreSQL via SQLAlchemy. Tables are created on startup (`crea
 ### Layout
 
 - `app/main.py` — FastAPI app, CORS, lifespan (creates tables)
-- `app/api/routes/` — HTTP routers (`/health`, `/db-health`, `/api/messages`, `/api/chat`)
+- `app/api/routes/` — HTTP routers (`/health`, `/db-health`, `/api/messages`, `/api/chat`, `/api/rag/*`)
+- `knowledge/` — corpus Markdown (ingestion RAG)
+- `app/services/rag/` — chunking, retrieval BM25, orchestration
 - `app/models/` — SQLAlchemy models
 - `app/schemas/` — Pydantic request/response types
 - `app/db/` — engine, sessions
@@ -19,6 +21,11 @@ Minimal API with PostgreSQL via SQLAlchemy. Tables are created on startup (`crea
 | `CORS_ORIGINS` | no | Origins allowed by CORS: comma list and/or JSON array, e.g. `https://a.com,https://b.com` or `["https://a.com","https://b.com"]` (quotes optional per item) |
 | `GEMINI_API_KEY` | for chat | **Server-side only.** Used by `POST /api/chat`; never put this in the frontend or GitHub Pages build. |
 | `GEMINI_MODEL` | no | Defaults to `gemini-2.0-flash`. |
+| `CHAT_PROVIDER` | no | `auto`: Gemini if key, else mock. `mock` / `gemini` / **`rag`** (retrieval seul, pas de LLM). |
+| `GEMINI_FALLBACK_MOCK_ON_429` | no | Si `true`, **429** Gemini → réponse mock (démo). |
+| `RAG_ENABLED` | no | `true` (défaut) : injecte le contexte dans mock + Gemini. |
+| `RAG_TOP_K`, `RAG_CHUNK_SIZE`, `RAG_CHUNK_OVERLAP` | no | Paramètres chunking / top-k retrieval. |
+| `RAG_KNOWLEDGE_DIR` | no | Dossier `.md` (défaut : `backend/knowledge/`). |
 
 Railway and similar hosts set `PORT`; the Docker image runs Uvicorn on `${PORT:-8000}`.
 
@@ -46,7 +53,9 @@ From repo root (with `.env` copied from `.env.example` and values filled in):
 docker compose up --build backend postgres
 ```
 
-Check: `GET http://localhost:8000/health`, `GET http://localhost:8000/db-health`, `GET http://localhost:8000/api/messages`.
+Check: `GET /health`, `GET /db-health`, `GET /api/messages`, `GET /api/rag/stats`, `GET /api/rag/search?q=RAG`.
+
+Pitch stack : voir `docs/STACK.md` à la racine du repo.
 
 ### Tests
 

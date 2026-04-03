@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from functools import lru_cache
-from typing import Optional
+from typing import Literal, Optional
 from urllib.parse import quote_plus
 
 from pydantic import AliasChoices, Field, model_validator
@@ -71,6 +71,16 @@ class Settings(BaseSettings):
     # Server-side only — never expose in the frontend bundle.
     gemini_api_key: Optional[str] = Field(default=None, validation_alias="GEMINI_API_KEY")
     gemini_model: str = Field(default="gemini-2.0-flash", validation_alias="GEMINI_MODEL")
+    # auto = Gemini if GEMINI_API_KEY is set, else mock. rag = retrieval-only (no LLM).
+    chat_provider: str = Field(default="auto", validation_alias="CHAT_PROVIDER")
+    # If true and Gemini returns 429, respond with a mock message instead of error.
+    gemini_fallback_mock_on_429: bool = Field(default=False, validation_alias="GEMINI_FALLBACK_MOCK_ON_429")
+    # RAG corpus (Markdown) — chunking + lexical retrieval + optional LLM augmentation
+    rag_enabled: bool = Field(default=True, validation_alias="RAG_ENABLED")
+    rag_top_k: int = Field(default=4, ge=1, le=20, validation_alias="RAG_TOP_K")
+    rag_chunk_size: int = Field(default=700, ge=200, le=4000, validation_alias="RAG_CHUNK_SIZE")
+    rag_chunk_overlap: int = Field(default=120, ge=0, le=500, validation_alias="RAG_CHUNK_OVERLAP")
+    rag_knowledge_dir: Optional[str] = Field(default=None, validation_alias="RAG_KNOWLEDGE_DIR")
 
     @model_validator(mode="after")
     def strip_database_url(self) -> Settings:
@@ -89,6 +99,19 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return parse_cors_origins(self.cors_origins)
+
+    @property
+    def resolved_chat_provider(self) -> Literal["mock", "gemini", "rag"]:
+        raw = (self.chat_provider or "auto").strip().lower()
+        if raw == "mock":
+            return "mock"
+        if raw == "rag":
+            return "rag"
+        if raw == "gemini":
+            return "gemini"
+        if raw == "auto":
+            return "gemini" if (self.gemini_api_key or "").strip() else "mock"
+        return "gemini" if (self.gemini_api_key or "").strip() else "mock"
 
 
 @lru_cache
