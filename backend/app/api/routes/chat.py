@@ -32,6 +32,11 @@ def _gemini_generate_content(api_key: str, model: str, body: dict) -> dict:
         if isinstance(data, dict) and "error" in data:
             err_msg = str(data.get("error", {}).get("message", ""))[:300]
         logger.warning("Gemini HTTP %s: %s", r.status_code, err_msg or r.text[:300])
+        if r.status_code == 429:
+            raise HTTPException(
+                status_code=429,
+                detail="gemini_rate_limited",
+            )
         raise HTTPException(status_code=502, detail="gemini_upstream_error")
     return data
 

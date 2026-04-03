@@ -31,6 +31,12 @@ export async function generateChatResponse(messages: Message[], language: Langua
         : "The server has no Gemini API key configured (GEMINI_API_KEY).";
     }
 
+    if (res.status === 429) {
+      return language === "fr"
+        ? "Quota Google Gemini dépassé (trop de requêtes ou limite du plan gratuit). Attends quelques minutes, réduis l’usage, ou active la facturation / un autre projet sur Google AI Studio. Infos : https://ai.google.dev/gemini-api/docs/rate-limits"
+        : "Google Gemini quota exceeded (rate limit or free tier). Wait a few minutes, use less, or enable billing in Google Cloud / AI Studio. See https://ai.google.dev/gemini-api/docs/rate-limits";
+    }
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       const detail =
