@@ -57,7 +57,12 @@ class Settings(BaseSettings):
 
     database_url: Optional[str] = Field(
         default=None,
-        validation_alias=AliasChoices("DATABASE_URL", "RAILWAY_DATABASE_URL"),
+        validation_alias=AliasChoices(
+            "DATABASE_URL",
+            "RAILWAY_DATABASE_URL",
+            "POSTGRES_URL",
+            "DATABASE_PRIVATE_URL",
+        ),
     )
     cors_origins: str = (
         "http://localhost:3000,http://localhost:5173,"
@@ -65,19 +70,18 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode="after")
-    def resolve_database_url(self) -> Settings:
-        direct = (self.database_url or "").strip()
-        if not direct:
-            direct = (_database_url_from_pg_environ() or "").strip()
-        if not direct:
-            msg = (
-                "DATABASE_URL is not set. On Railway: open your API service → Variables → "
-                "New variable → Reference → Postgres → DATABASE_URL. "
-                "(Alternatively set PGHOST, PGUSER, PGPASSWORD, PGDATABASE.)"
-            )
-            raise ValueError(msg)
-        self.database_url = direct
+    def strip_database_url(self) -> Settings:
+        if self.database_url is not None:
+            s = self.database_url.strip()
+            self.database_url = s if s else None
         return self
+
+    @property
+    def effective_database_url(self) -> Optional[str]:
+        """Resolved Postgres URL, or None if the API should start without a database (e.g. missing Railway reference)."""
+        if self.database_url:
+            return self.database_url
+        return _database_url_from_pg_environ()
 
     @property
     def cors_origin_list(self) -> list[str]:

@@ -6,14 +6,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import health, messages
 from app.core.config import get_settings
 from app.db.base import Base
-from app.db.session import engine
+from app.db.session import get_engine
 
 import app.models.message  # noqa: F401 — register ORM models on Base.metadata
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    eng = get_engine()
+    if eng is not None:
+        Base.metadata.create_all(bind=eng)
     yield
 
 
