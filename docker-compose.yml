@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      # Inject your Gemini API key at runtime (do not commit secrets)
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+
