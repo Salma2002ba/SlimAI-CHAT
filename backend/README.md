@@ -15,8 +15,8 @@ Minimal API with PostgreSQL via SQLAlchemy. Tables are created on startup (`crea
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DATABASE_URL` | yes | e.g. `postgresql://user:pass@host:5432/db` (also accepts `postgresql+psycopg://…`) |
-| `CORS_ORIGINS` | no | Comma-separated browser origins (defaults include local Vite ports) |
+| `DATABASE_URL` | yes | e.g. `postgresql://…` from Railway Postgres (reference variable) or local Docker |
+| `CORS_ORIGINS` | no | Origins allowed by CORS: comma list and/or JSON array, e.g. `https://a.com,https://b.com` or `["https://a.com","https://b.com"]` (quotes optional per item) |
 
 Railway and similar hosts set `PORT`; the Docker image runs Uvicorn on `${PORT:-8000}`.
 

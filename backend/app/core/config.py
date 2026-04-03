@@ -1,6 +1,32 @@
+import json
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def parse_cors_origins(raw: str) -> list[str]:
+    """Accept comma-separated origins, optional outer quotes, or a JSON array."""
+    s = raw.strip()
+    if not s:
+        return []
+    if s.startswith("["):
+        try:
+            data = json.loads(s)
+        except json.JSONDecodeError:
+            data = None
+        if isinstance(data, list):
+            out: list[str] = []
+            for item in data:
+                t = str(item).strip().strip('"').strip("'")
+                if t:
+                    out.append(t)
+            return out
+    parts: list[str] = []
+    for segment in s.split(","):
+        t = segment.strip().strip('"').strip("'")
+        if t:
+            parts.append(t)
+    return parts
 
 
 class Settings(BaseSettings):
@@ -14,7 +40,7 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        return parse_cors_origins(self.cors_origins)
 
 
 @lru_cache
