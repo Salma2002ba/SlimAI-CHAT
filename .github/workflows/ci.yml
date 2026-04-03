@@ -33,8 +33,10 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      # Job default cwd is `frontend/`; Docker context must be repo root paths.
       - name: Verify Docker build (frontend)
         if: ${{ hashFiles('frontend/Dockerfile') != '' }}
+        working-directory: ${{ github.workspace }}
         run: docker build -f frontend/Dockerfile frontend
 
   structure-check:
