@@ -1,4 +1,5 @@
-from urllib.parse import quote
+import logging
+import re
 
 import httpx
 from fastapi import APIRouter, HTTPException
@@ -7,15 +8,19 @@ from app.core.config import get_settings
 from app.schemas.chat import ChatRequest, ChatResponse
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 _MAX_INPUT_CHARS = 120_000
 _GEMINI_TIMEOUT = httpx.Timeout(60.0, connect=10.0)
 
+# Model id in the path must keep dots literal (e.g. gemini-2.0-flash). quote(..., safe="") encodes "." → %2E and breaks the API.
+_MODEL_ID_RE = re.compile(r"^[\w.-]+$")
+
 
 def _gemini_generate_content(api_key: str, model: str, body: dict) -> dict:
-    # REST only (no google-generativeai SDK) — smaller Docker image, fewer native deps.
-    safe_model = quote(model, safe="")
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{safe_model}:generateContent"
+    if not _MODEL_ID_RE.match(model):
+        raise HTTPException(status_code=400, detail="invalid_gemini_model")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
     with httpx.Client(timeout=_GEMINI_TIMEOUT) as client:
         r = client.post(url, params={"key": api_key}, json=body)
     try:
@@ -23,6 +28,10 @@ def _gemini_generate_content(api_key: str, model: str, body: dict) -> dict:
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=502, detail="gemini_invalid_response") from exc
     if r.status_code != 200:
+        err_msg = ""
+        if isinstance(data, dict) and "error" in data:
+            err_msg = str(data.get("error", {}).get("message", ""))[:300]
+        logger.warning("Gemini HTTP %s: %s", r.status_code, err_msg or r.text[:300])
         raise HTTPException(status_code=502, detail="gemini_upstream_error")
     return data
 
@@ -76,17 +85,27 @@ def chat_completion(payload: ChatRequest) -> ChatResponse:
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=502, detail="gemini_upstream_error") from exc
 
-    try:
-        candidates = data.get("candidates") or []
-        parts = candidates[0].get("content", {}).get("parts") or []
-        text = (parts[0].get("text") or "").strip()
-    except (IndexError, KeyError, TypeError):
-        text = ""
+    candidates = data.get("candidates") or []
+    text = ""
+    if candidates:
+        try:
+            parts = candidates[0].get("content", {}).get("parts") or []
+            text = (parts[0].get("text") or "").strip()
+        except (IndexError, KeyError, TypeError):
+            text = ""
 
     if not text:
-        text = (
-            "Désolé, je n'ai pas pu générer de réponse."
-            if payload.language == "fr"
-            else "I'm sorry, I couldn't generate a response."
-        )
+        block = data.get("promptFeedback", {}).get("blockReason")
+        if block:
+            text = (
+                "La requête a été bloquée par les filtres de sécurité du modèle. Reformulez votre message."
+                if payload.language == "fr"
+                else "The request was blocked by the model's safety filters. Try rephrasing."
+            )
+        else:
+            text = (
+                "Désolé, je n'ai pas pu générer de réponse."
+                if payload.language == "fr"
+                else "I'm sorry, I couldn't generate a response."
+            )
     return ChatResponse(text=text)
