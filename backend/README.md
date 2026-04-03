@@ -20,6 +20,8 @@ Minimal API with PostgreSQL via SQLAlchemy. Tables are created on startup (`crea
 
 Railway and similar hosts set `PORT`; the Docker image runs Uvicorn on `${PORT:-8000}`.
 
+**Railway:** add a variable reference `DATABASE_URL` from your Postgres service on the API service. If Railway only injected `PGHOST` / `PGUSER` / `PGPASSWORD` / `PGDATABASE`, the app builds a URL from those automatically (with `sslmode=require` when Railway env is detected).
+
 ### Local (without Docker)
 
 From `backend/`:
