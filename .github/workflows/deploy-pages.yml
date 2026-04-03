@@ -36,12 +36,22 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # URL is public — prefer Settings → Secrets and variables → Actions → Variables: VITE_API_BASE_URL
+      # (Secrets also work: same name.) Example: https://slimai-chat-production.up.railway.app — no trailing slash.
+      - name: Require VITE_API_BASE_URL
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || secrets.VITE_API_BASE_URL }}
+        run: |
+          if [ -z "$VITE_API_BASE_URL" ]; then
+            echo "::error::Define Actions variable or secret VITE_API_BASE_URL (your FastAPI public URL, no trailing slash)."
+            exit 1
+          fi
+
       - name: Build frontend
         env:
           # Must match GitHub Pages URL: /<repository-name>/
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
-          # Public Railway (or other) API origin, no trailing slash — e.g. https://xxx.up.railway.app
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || secrets.VITE_API_BASE_URL }}
         run: npm run build
 
       - name: Upload Pages artifact
