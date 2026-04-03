@@ -1,23 +1,55 @@
-## SlimAI Backend (placeholder)
+## SlimAI backend (FastAPI)
 
-This directory is reserved for the future SlimAI backend (e.g. Python/FastAPI) that will connect to PostgreSQL.
+Minimal API with PostgreSQL via SQLAlchemy. Tables are created on startup (`create_all`); no migrations for now.
 
-### Proposed structure
+### Layout
 
-When implementing the backend, a recommended layout is:
+- `app/main.py` — FastAPI app, CORS, lifespan (creates tables)
+- `app/api/routes/` — HTTP routers (`/health`, `/db-health`, `/api/messages`)
+- `app/models/` — SQLAlchemy models
+- `app/schemas/` — Pydantic request/response types
+- `app/db/` — engine, sessions
+- `app/core/config.py` — `DATABASE_URL`, `CORS_ORIGINS`
 
-- `app/`
-  - `main.py` (FastAPI application entrypoint)
-  - `api/` (route definitions / routers)
-  - `services/` (business logic, orchestrating LLM/RAG and data access)
-  - `models/` (Pydantic schemas, domain models)
-  - `db/`
-    - `session.py` (database session / engine setup using `DATABASE_URL`)
-    - `repositories/` (DB access layer)
-  - `llm/` (integration points for LLM / RAG)
-- `tests/`
-- `pyproject.toml` (FastAPI, uvicorn, SQL toolkit/ORM, etc.)
-- `Dockerfile` (backend image, exposing port 8000)
+### Environment
 
-The backend will be attached to PostgreSQL via the `DATABASE_URL` environment variable defined at the repo root (`.env` / `.env.example`), and the `backend` service in `docker-compose.yml` will share the same network as `postgres`.
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | yes | e.g. `postgresql://user:pass@host:5432/db` (also accepts `postgresql+psycopg://…`) |
+| `CORS_ORIGINS` | no | Comma-separated browser origins (defaults include local Vite ports) |
 
+Railway and similar hosts set `PORT`; the Docker image runs Uvicorn on `${PORT:-8000}`.
+
+### Local (without Docker)
+
+From `backend/`:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate   # Windows
+pip install -r requirements.txt
+set DATABASE_URL=postgresql://slimai_user:slimai_password@localhost:5432/slimai
+uvicorn app.main:app --reload --port 8000
+```
+
+With Postgres from repo root: `docker compose up -d postgres`, then point `DATABASE_URL` at `localhost:5432`.
+
+### Docker Compose
+
+From repo root (with `.env` copied from `.env.example` and values filled in):
+
+```bash
+docker compose up --build backend postgres
+```
+
+Check: `GET http://localhost:8000/health`, `GET http://localhost:8000/db-health`, `GET http://localhost:8000/api/messages`.
+
+### Tests
+
+```bash
+cd backend
+pip install -r requirements.txt
+pytest
+```
+
+Uses in-memory SQLite unless `DATABASE_URL` is already set.

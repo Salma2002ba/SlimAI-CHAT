@@ -8,25 +8,27 @@ services:
     ports:
       - "8080:80"
     environment:
-      # Inject your Gemini API key at runtime (do not commit secrets)
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      # URL of the future backend API (FastAPI), if/when enabled
       - BACKEND_URL=${BACKEND_URL:-http://localhost:8000}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - slimai-network
 
-  # Future FastAPI backend (not implemented yet)
-  # This service is declared but can be commented out until used.
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      PORT: "8000"
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080,http://localhost:5173,http://127.0.0.1:5173}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - slimai-network
 
@@ -34,13 +36,19 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - slimai-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - slimai-network
 
@@ -51,4 +59,3 @@ networks:
 volumes:
   slimai-postgres-data:
     driver: local
-

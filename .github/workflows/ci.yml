@@ -39,6 +39,34 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: docker build -f frontend/Dockerfile frontend
 
+  backend-ci:
+    name: Backend tests & Docker build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pytest
+        run: pytest -q
+
+      - name: Verify Docker build (backend)
+        if: ${{ hashFiles('backend/Dockerfile') != '' }}
+        working-directory: ${{ github.workspace }}
+        run: docker build -f backend/Dockerfile backend
+
   structure-check:
     name: Verify repo structure
     runs-on: ubuntu-latest

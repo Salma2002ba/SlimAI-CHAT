@@ -1,0 +1,1 @@
+"""SlimAI FastAPI application package."""
