@@ -5,11 +5,11 @@ Minimal API with PostgreSQL via SQLAlchemy. Tables are created on startup (`crea
 ### Layout
 
 - `app/main.py` — FastAPI app, CORS, lifespan (creates tables)
-- `app/api/routes/` — HTTP routers (`/health`, `/db-health`, `/api/messages`)
+- `app/api/routes/` — HTTP routers (`/health`, `/db-health`, `/api/messages`, `/api/chat`)
 - `app/models/` — SQLAlchemy models
 - `app/schemas/` — Pydantic request/response types
 - `app/db/` — engine, sessions
-- `app/core/config.py` — `DATABASE_URL`, `CORS_ORIGINS`
+- `app/core/config.py` — `DATABASE_URL`, `CORS_ORIGINS`, `GEMINI_API_KEY` (chat proxy)
 
 ### Environment
 
@@ -17,6 +17,8 @@ Minimal API with PostgreSQL via SQLAlchemy. Tables are created on startup (`crea
 |----------|----------|-------------|
 | `DATABASE_URL` | yes | e.g. `postgresql://…` from Railway Postgres (reference variable) or local Docker |
 | `CORS_ORIGINS` | no | Origins allowed by CORS: comma list and/or JSON array, e.g. `https://a.com,https://b.com` or `["https://a.com","https://b.com"]` (quotes optional per item) |
+| `GEMINI_API_KEY` | for chat | **Server-side only.** Used by `POST /api/chat`; never put this in the frontend or GitHub Pages build. |
+| `GEMINI_MODEL` | no | Defaults to `gemini-2.0-flash`. |
 
 Railway and similar hosts set `PORT`; the Docker image runs Uvicorn on `${PORT:-8000}`.
 

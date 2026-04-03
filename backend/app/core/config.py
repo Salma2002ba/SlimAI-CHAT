@@ -68,6 +68,9 @@ class Settings(BaseSettings):
         "http://localhost:3000,http://localhost:5173,"
         "http://127.0.0.1:3000,http://127.0.0.1:5173,http://localhost:8080"
     )
+    # Server-side only — never expose in the frontend bundle.
+    gemini_api_key: Optional[str] = Field(default=None, validation_alias="GEMINI_API_KEY")
+    gemini_model: str = Field(default="gemini-2.0-flash", validation_alias="GEMINI_MODEL")
 
     @model_validator(mode="after")
     def strip_database_url(self) -> Settings:

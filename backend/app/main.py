@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import health, messages
+from app.api.routes import chat, health, messages
 from app.core.config import get_settings
 from app.db.base import Base
 from app.db.session import get_engine
@@ -32,3 +32,4 @@ app.add_middleware(
 
 app.include_router(health.router, tags=["health"])
 app.include_router(messages.router, prefix="/api", tags=["messages"])
+app.include_router(chat.router, prefix="/api", tags=["chat"])

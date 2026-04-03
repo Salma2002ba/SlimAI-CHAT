@@ -1,37 +1,60 @@
-import { GoogleGenAI } from "@google/genai";
 import { Message, Language } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-
-export async function generateChatResponse(messages: Message[], language: Language = 'fr') {
-  try {
-    const history = messages.slice(0, -1).map(m => ({
-      role: m.role,
-      parts: [{ text: m.text }]
-    }));
-
-    const lastMessage = messages[messages.length - 1].text;
-
-    const systemInstruction = `You are SlimAI, a stylish and helpful AI assistant. 
-    Your personality is professional yet friendly, inspired by modern minimalist design.
-    You must respond in ${language === 'fr' ? 'French' : 'English'}.
-    Use markdown for formatting. Keep responses concise and helpful.
-    You are part of a modern interface designed with soft pastel colors (green, blue, pink).`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: [...history, { role: 'user', parts: [{ text: lastMessage }] }],
-      config: {
-        systemInstruction,
-      }
-    });
-
-    return response.text || (language === 'fr' ? "Désolé, je n'ai pas pu générer de réponse." : "I'm sorry, I couldn't generate a response.");
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    return language === 'fr' 
-      ? "Une erreur s'est produite lors de la communication avec SlimAI. Veuillez vérifier votre connexion ou votre clé API."
-      : "An error occurred while communicating with SlimAI. Please check your connection or API key.";
-  }
+function apiBase(): string {
+  const raw = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  return (raw ?? "").trim().replace(/\/+$/, "");
 }
 
+export async function generateChatResponse(messages: Message[], language: Language = "fr") {
+  const base = apiBase();
+  if (!base) {
+    return language === "fr"
+      ? "Configuration manquante : définissez VITE_API_BASE_URL (URL de l’API, sans slash final)."
+      : "Missing configuration: set VITE_API_BASE_URL to your API base URL (no trailing slash).";
+  }
+
+  const body = {
+    language,
+    messages: messages.map((m) => ({ role: m.role, text: m.text })),
+  };
+
+  try {
+    const res = await fetch(`${base}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (res.status === 503) {
+      return language === "fr"
+        ? "Le serveur n’a pas de clé Gemini configurée (GEMINI_API_KEY)."
+        : "The server has no Gemini API key configured (GEMINI_API_KEY).";
+    }
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const detail =
+        typeof err === "object" && err !== null && "detail" in err
+          ? String((err as { detail: unknown }).detail)
+          : res.statusText;
+      console.error("Chat API error:", res.status, detail);
+      return language === "fr"
+        ? "Une erreur s’est produite lors de la communication avec SlimAI. Réessayez plus tard."
+        : "Something went wrong talking to SlimAI. Please try again later.";
+    }
+
+    const data = (await res.json()) as { text?: string };
+    const text = (data.text ?? "").trim();
+    return (
+      text ||
+      (language === "fr"
+        ? "Désolé, je n’ai pas pu générer de réponse."
+        : "I'm sorry, I couldn't generate a response.")
+    );
+  } catch (error) {
+    console.error("Chat API Error:", error);
+    return language === "fr"
+      ? "Impossible de joindre l’API. Vérifiez votre connexion et l’URL du backend (CORS / VITE_API_BASE_URL)."
+      : "Could not reach the API. Check your connection and backend URL (CORS / VITE_API_BASE_URL).";
+  }
+}

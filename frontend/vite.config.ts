@@ -15,9 +15,7 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     plugins: [react(), tailwindcss()],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
+    // VITE_* vars are exposed via import.meta.env; do not embed API keys in the client bundle.
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
