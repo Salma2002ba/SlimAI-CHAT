@@ -10,4 +10,45 @@ services:
     environment:
       # Inject your Gemini API key at runtime (do not commit secrets)
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      # URL of the future backend API (FastAPI), if/when enabled
+      - BACKEND_URL=${BACKEND_URL:-http://localhost:8000}
+    depends_on:
+      - postgres
+    networks:
+      - slimai-network
+
+  # Future FastAPI backend (not implemented yet)
+  # This service is declared but can be commented out until used.
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      - postgres
+    networks:
+      - slimai-network
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - slimai-postgres-data:/var/lib/postgresql/data
+    networks:
+      - slimai-network
+
+networks:
+  slimai-network:
+    driver: bridge
+
+volumes:
+  slimai-postgres-data:
+    driver: local
 

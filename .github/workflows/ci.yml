@@ -55,3 +55,8 @@ jobs:
           test -d docs
           test -d scripts
 
+      - name: Validate docker-compose file
+        run: |
+          docker compose config
+
+
