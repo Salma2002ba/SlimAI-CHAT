@@ -6,6 +6,14 @@ on:
       - "**"
   pull_request:
 
+# Moindre privilège : le jeton GitHub n'a que la lecture du dépôt
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   frontend-ci:
     name: Frontend build & checks
@@ -88,4 +96,28 @@ jobs:
         run: |
           docker compose config
 
+  security:
+    name: Secrets (Gitleaks) & dependencies (Trivy)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tout l'historique : un secret supprimé reste dans les anciens commits
+
+      - name: Scan secrets in Git history
+        run: docker run --rm -v "$PWD":/repo zricethezav/gitleaks:v8.30.1 git /repo --no-banner --redact
+
+      - name: Scan dependencies (report only)
+        run: |
+          docker run --rm -v "$PWD":/src aquasec/trivy:0.75.0 fs --quiet --scanners vuln \
+            --severity HIGH,CRITICAL --format table /src | tee trivy.txt
+          {
+            echo "## Trivy : dépendances backend et frontend"
+            echo
+            echo '```'
+            cat trivy.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 

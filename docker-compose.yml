@@ -1,17 +1,16 @@
-version: "3.9"
-
 services:
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:8000
     ports:
       - "8080:80"
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+    # La clé Gemini reste côté serveur : le frontend ne parle qu'à l'API
     depends_on:
-      postgres:
-        condition: service_healthy
+      backend:
+        condition: service_started
     networks:
       - slimai-network
 

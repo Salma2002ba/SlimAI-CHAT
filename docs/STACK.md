@@ -1,4 +1,4 @@
-# SlimAI — stack & pitch entretien
+# SlimAI — architecture et choix techniques
 
 Projet **full-stack** volontairement **explicable** : on peut décrire chaque couche sans magie.
 
@@ -21,7 +21,7 @@ flowchart LR
   F --> DB
 ```
 
-## Buzzwords → où ça vit dans le repo
+## Concepts → où ils vivent dans le code
 
 | Concept | Implémentation |
 |--------|------------------|
@@ -35,10 +35,6 @@ flowchart LR
 | **Sécurité** | Clé Gemini **uniquement** serveur ; front = `VITE_API_BASE_URL` |
 | **CI/CD** | GitHub Actions : pytest, Docker, `docker compose config` ; Pages avec `VITE_API_BASE_URL` |
 
-## Phrase d’accroche (30 s)
-
-> « SlimAI est un chatbot web dont le backend FastAPI abstrait le LLM : RAG lexical sur Markdown versionné, augmentation de prompt Gemini, et modes mock / RAG-only pour démo sans quota. Le front Vite parle uniquement à mon API, jamais à Google avec la clé. »
-
 ## Démonstration rapide
 
 1. `GET /api/rag/stats` — nombre de chunks, fichiers sources.  
@@ -46,7 +42,7 @@ flowchart LR
 3. `POST /api/chat` avec `CHAT_PROVIDER=rag` — réponse 100 % retrieval.  
 4. `CHAT_PROVIDER=gemini` + clé — synthèse avec contexte injecté.
 
-## Évolutions crédibles (si on te demande la suite)
+## Évolutions possibles
 
 - Embeddings + **pgvector** / autre vector store.  
 - **LangChain / LlamaIndex** pour chaîner retrieval + rerank.  

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="300" viewBox="0 0 1200 300" role="img" aria-labelledby="t d">
+  <title id="t">SlimAI</title>
+  <desc id="d">Bannière du projet : chatbot web avec RAG, API FastAPI et LLM Gemini.</desc>
+  <rect width="1200" height="300" rx="18" fill="#0a0a0b"/>
+  <!-- Bande aux couleurs du portfolio -->
+  <rect x="0" y="0" width="400" height="8" fill="#e8397d"/>
+  <rect x="400" y="0" width="400" height="8" fill="#29c282"/>
+  <rect x="800" y="0" width="400" height="8" fill="#3d9fe8"/>
+  <text x="60" y="110" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="3" fill="#3de8a0">IA GÉNÉRATIVE · RAG · FULL-STACK</text>
+  <text x="60" y="170" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="50" font-weight="700" fill="#f0ede8">SlimAI<tspan fill="#e8397d">.</tspan></text>
+  <text x="60" y="218" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="26" fill="#8b8b94">Un chatbot qui cite ses sources : FastAPI · RAG BM25 · Gemini · React</text>
+  <!-- Pictogramme : bulle de chat et documents sources -->
+  <g transform="translate(900 60)" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M30 20 h150 a20 20 0 0 1 20 20 v70 a20 20 0 0 1 -20 20 h-90 l-35 30 v-30 h-25 a20 20 0 0 1 -20 -20 v-70 a20 20 0 0 1 20 -20 z" stroke="#3d9fe8"/>
+    <path d="M60 60 h100" stroke="#e8397d"/>
+    <path d="M60 88 h70" stroke="#29c282"/>
+    <rect x="210" y="70" width="44" height="56" rx="6" stroke="#8b8b94"/>
+    <path d="M220 88 h24 M220 104 h18" stroke="#8b8b94"/>
+  </g>
+</svg>
