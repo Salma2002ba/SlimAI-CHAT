@@ -19,7 +19,7 @@ Minimal API with PostgreSQL via SQLAlchemy. Tables are created on startup (`crea
 |----------|----------|-------------|
 | `DATABASE_URL` | yes | e.g. `postgresql://…` from Railway Postgres (reference variable) or local Docker |
 | `CORS_ORIGINS` | no | Origins allowed by CORS: comma list and/or JSON array, e.g. `https://a.com,https://b.com` or `["https://a.com","https://b.com"]` (quotes optional per item) |
-| `GEMINI_API_KEY` | for chat | **Server-side only.** Used by `POST /api/chat`; never put this in the frontend or GitHub Pages build. |
+| `GEMINI_API_KEY` | for chat | **Server-side only.** Used by `POST /api/chat`; never put this in the frontend build. |
 | `GEMINI_MODEL` | no | Defaults to `gemini-2.0-flash`. |
 | `CHAT_PROVIDER` | no | `auto`: Gemini if key, else mock. `mock` / `gemini` / **`rag`** (retrieval seul, pas de LLM). |
 | `GEMINI_FALLBACK_MOCK_ON_429` | no | Si `true`, **429** Gemini → réponse mock (démo). |

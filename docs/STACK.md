@@ -33,7 +33,7 @@ flowchart LR
 | **API REST** | OpenAPI auto : `/docs`, `/api/rag/stats`, `/api/rag/search` |
 | **Persistance** | SQLAlchemy + Postgres, `messages`, `create_all` au lifespan |
 | **Sécurité** | Clé Gemini **uniquement** serveur ; front = `VITE_API_BASE_URL` |
-| **CI/CD** | GitHub Actions : pytest, Docker, `docker compose config` ; Pages avec `VITE_API_BASE_URL` |
+| **CI/CD** | GitHub Actions : pytest, Docker, `docker compose config` ; scans Gitleaks et Trivy |
 
 ## Démonstration rapide
 

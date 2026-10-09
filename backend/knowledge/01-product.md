@@ -11,4 +11,4 @@ SlimAI est un assistant conversationnel full-stack : interface React (Vite), API
 
 ## Public cible
 
-Développeurs et équipes produit qui veulent une base chatbot déployable (GitHub Pages + API) avec patterns d’architecture expliquables en entretien.
+Développeurs et équipes produit qui veulent une base chatbot déployable (interface web + API) avec patterns d’architecture expliquables en entretien.

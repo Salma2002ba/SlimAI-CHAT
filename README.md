@@ -36,7 +36,6 @@ d'API **côté serveur uniquement**.
 
 ## Sommaire
 
-- [Aperçu](#aperçu)
 - [Architecture](#architecture)
 - [Comment fonctionne le RAG](#comment-fonctionne-le-rag)
 - [Les modes de réponse](#les-modes-de-réponse)
@@ -47,36 +46,17 @@ d'API **côté serveur uniquement**.
 
 ---
 
-## Aperçu
-
-<p align="center">
-  <img src="docs/screenshots/01-accueil.jpg" alt="Page d'accueil de SlimAI" width="90%">
-</p>
-
-<table>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/03-sources-rag.jpg" alt="Réponse construite à partir des documents"></td>
-    <td width="50%"><img src="docs/screenshots/02-reponse-rag.jpg" alt="Passages retrouvés avec leur score"></td>
-  </tr>
-  <tr>
-    <td align="center">Réponse construite à partir de la base documentaire</td>
-    <td align="center">Chaque passage est cité avec sa source et son score BM25</td>
-  </tr>
-</table>
-
-> Captures en mode `rag` (sans clé Gemini), plateforme lancée avec Docker Compose.
-
 ## Architecture
 
 ```mermaid
 flowchart LR
     user(["Navigateur"]):::user
 
-    subgraph front["Frontend · GitHub Pages"]
+    subgraph front["Frontend · Nginx"]
         ui["React 19 + Vite + TypeScript"]:::front
     end
 
-    subgraph api["API · FastAPI (Railway)"]
+    subgraph api["API · FastAPI"]
         direction TB
         chat["/api/chat<br/>orchestration"]:::api
         rag["RAG<br/>chunks · BM25 · top-k"]:::api
@@ -100,7 +80,7 @@ flowchart LR
 ```
 
 **Le choix clé** : le frontend ne parle **qu'à l'API**, jamais à Google. La clé Gemini vit dans
-les variables d'environnement du serveur. Un site statique (GitHub Pages) ne peut pas garder de
+les variables d'environnement du serveur. Un site statique ne peut pas garder de
 secret : tout ce qui y est compilé est lisible par n'importe qui.
 
 ## Comment fonctionne le RAG
@@ -198,9 +178,9 @@ VITE_API_BASE_URL=http://localhost:8000 npm run dev
 
 </details>
 
-**Déploiement** : l'API tourne sur Railway avec sa base PostgreSQL, l'interface est publiée sur
-GitHub Pages par le workflow [`deploy-pages.yml`](.github/workflows/deploy-pages.yml), qui
-injecte l'URL publique de l'API au build (`VITE_API_BASE_URL`).
+**Déploiement** : l'API se déploie comme une image Docker sur n'importe quel hébergeur (elle a
+tourné sur Railway avec sa base PostgreSQL). L'interface est un site statique construit par Vite,
+qui reçoit l'URL publique de l'API au build (`VITE_API_BASE_URL`).
 
 ## Qualité et CI
 
@@ -236,7 +216,7 @@ Le jeton GitHub du pipeline n'a que le droit de lecture (`permissions: contents:
 ├── frontend/               React 19 + Vite + TypeScript, servi par Nginx en conteneur
 ├── docs/                   Architecture et choix techniques
 ├── docker-compose.yml      Interface + API + PostgreSQL
-└── .github/workflows/      CI et déploiement GitHub Pages
+└── .github/workflows/      CI (tests, builds, sécurité)
 ```
 
 ---

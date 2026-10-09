@@ -4,7 +4,7 @@
 
 | Couche | Technologies |
 |--------|----------------|
-| Frontend | React 19, TypeScript, Vite, Tailwind, GitHub Pages |
+| Frontend | React 19, TypeScript, Vite, Tailwind, servi par Nginx |
 | Backend | Python 3.12, FastAPI, Uvicorn, Pydantic Settings |
 | Données | PostgreSQL (SQLAlchemy 2), tables créées au `lifespan` |
 | LLM | Google Gemini via API REST (`generativelanguage.googleapis.com`) |
